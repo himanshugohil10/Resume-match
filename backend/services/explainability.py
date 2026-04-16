@@ -1,41 +1,44 @@
+from .groq_client import call_groq
+
 def generate_explanation(resume_data: dict, jd_data: dict, scores: dict) -> dict:
-    """Generate a detailed breakdown of the candidate's scores."""
+    """Generate a conversational, human-like critique and reasoning."""
     
-    # Find matched and missing skills
-    resume_skills = set([s.lower() for s in resume_data.get("skills", [])])
-    jd_skills = set([s.lower() for s in jd_data.get("skills", [])])
+    prompt = f"""
+    As an expert technical recruiter, provide a conversational and honest critique of this candidate for the following role.
     
-    matched_skills = list(jd_skills.intersection(resume_skills))
-    missing_skills = list(jd_skills - resume_skills)
+    Role: {jd_data.get('role_title', 'The provided position')}
+    Candidate Match Scores: {scores}
     
-    # Find matched and missing tools
-    resume_tools = set([t.lower() for t in resume_data.get("tools", [])])
-    jd_tools = set([t.lower() for t in jd_data.get("tools", [])])
+    Candidate Skill Depth Evidence: {resume_data.get('skills', [])}
+    Candidate Experience Quality: {resume_data.get('experience', [])}
     
-    matched_tools = list(jd_tools.intersection(resume_tools))
-    missing_tools = list(jd_tools - resume_tools)
+    Requirement Complexity: {jd_data.get('experience_expectation', {})}
+    Required Skills Importance: {jd_data.get('required_skills', [])}
+
+    Return a JSON object with:
+    1. "critique": A 2-3 sentence conversational summary of the candidate's fit.
+    2. "skill_reasoning": Explain why the skills score was given, citing specific evidence or gaps.
+    3. "experience_reasoning": Explain why the experience score was given, focusing on quality/repetitiveness vs growth.
+    4. " recruiter_verdict": A final "human" take on whether they are worth interviewing.
     
-    explanation = {
-        "skills": {
-            "score": round(scores.get("skills", 0), 2),
-            "matched": matched_skills,
-            "missing": missing_skills
-        },
-        "experience": {
-            "score": round(scores.get("experience", 0), 2),
-            "required": jd_data.get("experience_years", 0),
-            "actual": resume_data.get("experience_years", 0)
-        },
-        "education": {
-            "score": round(scores.get("education", 0), 2),
-            "required": jd_data.get("education", ""),
-            "actual": resume_data.get("education", "")
-        },
-        "tools": {
-            "score": round(scores.get("tools", 0), 2),
-            "matched": matched_tools,
-            "missing": missing_tools
+    Example:
+    {{
+        "critique": "John shows strong growth in React, but his experience with backend scaling seems a bit repetitive.",
+        "skill_reasoning": "While he has 3 years of Python, he lacks evidence of working with distributed systems as required.",
+        "experience_reasoning": "Solid 5 years, but the last 2 years at X Corp seem to be maintenance work without much new complexity.",
+        "recruiter_verdict": "Waitlist - Strong skills but check for passion in new challenges."
+    }}
+    """
+    
+    explanation_data = call_groq(prompt)
+    
+    # Fallback to structured data if LLM fails
+    if "error" in explanation_data:
+        return {
+            "critique": "System error generating critique.",
+            "skill_reasoning": f"Score: {scores.get('skills')}",
+            "experience_reasoning": f"Score: {scores.get('experience')}",
+            "recruiter_verdict": "Pending review."
         }
-    }
-    
-    return explanation
+        
+    return explanation_data

@@ -207,7 +207,7 @@ function App() {
                       <h3 style={{ fontSize: '1.25rem' }}>{candidate.candidate_name}</h3>
                       <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
                         <span>Rank #{idx + 1}</span>
-                        <span>Exp: {candidate.explanation.experience.actual} yrs</span>
+                        <span>{candidate.explanation.recruiter_verdict}</span>
                       </div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
@@ -218,36 +218,58 @@ function App() {
                     </div>
                   </div>
 
+                  <div style={{ marginTop: '1rem', padding: '0.75rem', background: 'var(--glass)', borderRadius: '0.5rem', fontSize: '0.9rem', fontStyle: 'italic', borderLeft: '3px solid var(--primary)' }}>
+                    "{candidate.explanation.critique}"
+                  </div>
+
                   {expandedCandidate === idx && (
                     <motion.div
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: 'auto', opacity: 1 }}
                       style={{ marginTop: '1.5rem', borderTop: '1px solid var(--glass-border)', paddingTop: '1.5rem' }}
                     >
-                      <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                        <div>
-                          <h4 style={{ fontSize: '0.875rem', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Skills Match</h4>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
-                            {candidate.explanation.skills.matched.map(s => (
-                              <span key={s} className="tag tag-success">{s}</span>
-                            ))}
-                            {candidate.explanation.skills.missing.map(s => (
-                              <span key={s} className="tag tag-error">{s}</span>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem' }}>
+                        <div className="reasoning-box">
+                          <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: 'var(--primary)' }}>
+                            <CheckCircle2 size={16} /> Skill Depth Analysis
+                          </h4>
+                          <p style={{ fontSize: '0.9rem', marginBottom: '1rem', color: 'var(--text-muted)' }}>
+                            {candidate.explanation.skill_reasoning}
+                          </p>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                            {candidate.resume_data.skills.map((s, i) => (
+                              <div key={i} className="tag tag-neutral" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: '0.5rem 0.75rem' }}>
+                                <span style={{ fontWeight: 'bold' }}>{s.name}</span>
+                                <span style={{ fontSize: '0.7rem', opacity: 0.7 }}>{s.proficiency} | {s.context}</span>
+                              </div>
                             ))}
                           </div>
                         </div>
-                        <div>
-                          <h4 style={{ fontSize: '0.875rem', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Tools Match</h4>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
-                            {candidate.explanation.tools.matched.map(t => (
-                              <span key={t} className="tag tag-success">{t}</span>
+
+                        <div className="reasoning-box">
+                          <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: 'var(--primary)' }}>
+                            <BarChart3 size={16} /> Experience Quality
+                          </h4>
+                          <p style={{ fontSize: '0.9rem', marginBottom: '1rem', color: 'var(--text-muted)' }}>
+                            {candidate.explanation.experience_reasoning}
+                          </p>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            {candidate.resume_data.experience.map((e, i) => (
+                              <div key={i} style={{ fontSize: '0.8rem', padding: '0.5rem', background: 'var(--glass)', borderRadius: '0.4rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                  <strong>{e.role} ({e.years}y)</strong>
+                                  <span className={`tag ${e.complexity === 'High' ? 'tag-success' : 'tag-neutral'}`} style={{ fontSize: '0.7rem' }}>{e.complexity} Complexity</span>
+                                </div>
+                                <div style={{ marginTop: '0.25rem', opacity: 0.8 }}>Impact: {e.impact}</div>
+                                {e.is_repetitive && <div style={{ color: 'var(--error)', fontSize: '0.7rem', marginTop: '0.25rem' }}>Note: Identified as repetitive work</div>}
+                              </div>
                             ))}
                           </div>
                         </div>
                       </div>
 
                       <div style={{ marginTop: '1.5rem' }}>
-                        <h4 style={{ fontSize: '0.875rem', marginBottom: '0.75rem', color: 'var(--text-muted)' }}>Section Breakdown</h4>
+                        <h4 style={{ fontSize: '0.875rem', marginBottom: '0.75rem', color: 'var(--text-muted)' }}>Score Breakdown</h4>
                         {Object.entries(candidate.scores).map(([name, score]) => (
                           <div key={name} style={{ marginBottom: '0.5rem' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '0.25rem' }}>
