@@ -31,6 +31,8 @@ An AI-powered system that ranks resumes against a job description with full tran
 - Python 3.8+
 - Node.js 18+
 - Groq API Key
+- [Ollama](https://ollama.com/) (Optional, used as a local fallback if Groq API fails)
+  - You will need to pull the Llama 3.2 model: `ollama run llama3.2`
 
 ### 1. Backend Setup
 ```bash

@@ -54,14 +54,7 @@ function App() {
   };
 
   const handleWeightChange = (key, value) => {
-    const newWeights = { ...weights, [key]: parseFloat(value) };
-    // Normalize weights to sum to 1
-    const sum = Object.values(newWeights).reduce((a, b) => a + b, 0);
-    const normalized = {};
-    for (let k in newWeights) {
-      normalized[k] = newWeights[k] / sum;
-    }
-    setWeights(normalized);
+    setWeights({ ...weights, [key]: parseFloat(value) });
   };
 
   return (
